@@ -1,0 +1,76 @@
+﻿@model HabitViewModel
+
+@{
+    var currentDate = Model.ViewMonth;
+    var firstDayOfMonth = new DateTime(currentDate.Year, currentDate.Month, 1);
+    var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+    var daysInMonth = DateTime.DaysInMonth(currentDate.Year, currentDate.Month);
+    var startingDayOfWeek = ((int)firstDayOfMonth.DayOfWeek + 6) % 7;
+}
+
+<div class="bg-white rounded-lg p-4 mt-2 text-black">
+    <div class="mb-4">
+        <div class="flex items-center justify-between mb-2">
+            <form method="post" action="@Url.Action("ChangeMonth", "HabitTracker")">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="habitId" value="@Model.Id" />
+                <input type="hidden" name="monthOffset" value="-1" />
+                <button type="submit" class="text-2xl text-gray-600 hover:text-gray-900 px-2">
+                    ←
+                </button>
+            </form>
+
+            <div class="text-xl font-bold text-black">
+                @currentDate.ToString("MMMM yyyy")
+            </div>
+
+            @if (currentDate.Month == DateTime.Today.Month && currentDate.Year == DateTime.Today.Year)
+            {
+                <div class="w-10"></div>
+            }
+            else
+            {
+                <form method="post" action="@Url.Action("ChangeMonth", "HabitTracker")">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="habitId" value="@Model.Id" />
+                    <input type="hidden" name="monthOffset" value="1" />
+                    <button type="submit"
+                            class="text-2xl text-gray-600 hover:text-gray-900 px-2"
+                            disabled="@(currentDate >= DateTime.Today)">
+                        →
+                    </button>
+                </form>
+            }
+        </div>
+    </div>
+
+    <div class="grid grid-cols-7 gap-2 text-center font-bold mb-2">
+        <div>Mon</div>
+        <div>Tue</div>
+        <div>Wed</div>
+        <div>Thu</div>
+        <div>Fri</div>
+        <div>Sat</div>
+        <div>Sun</div>
+    </div>
+
+    <div class="grid grid-cols-7 gap-2 text-center">
+        @for (int i = 0; i < startingDayOfWeek; i++)
+        {
+            <div></div>
+        }
+
+        @for (int day = 1; day <= daysInMonth; day++)
+        {
+            var currentDayDate = new DateTime(currentDate.Year, currentDate.Month, day);
+            var isCompleted = Model.CompletionDates.Contains(currentDayDate);
+            var isPastDate = currentDayDate <= DateTime.Today && currentDayDate >= Model.CreatedDate;
+
+            <div class="rounded-full w-8 h-8 flex items-center justify-center mx-auto
+                @(isCompleted ? "bg-green-500 text-white" :
+                  (isPastDate ? "bg-red-500 text-white" : ""))">
+                @day
+            </div>
+        }
+    </div>
+</div>

@@ -20,3 +20,42 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.habit-calendar {
+    background-color: white;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-top: 0.5rem;
+    display: none;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.calendar-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.calendar-day {
+    text-align: center;
+    padding: 0.5rem;
+    border-radius: 50%;
+}
+
+.completed-day {
+    background-color: #22c55e;
+    color: white;
+}
+
+.missed-day {
+    background-color: #ef4444;
+    color: white;
+}

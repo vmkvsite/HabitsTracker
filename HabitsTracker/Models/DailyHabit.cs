@@ -25,4 +25,7 @@ public class DailyHabit
     public AppUser? User { get; set; }
 
     public List<HabitCompletion> Completions { get; set; }
+
+    [Required]
+    public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 }

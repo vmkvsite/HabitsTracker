@@ -99,5 +99,12 @@ namespace HabitsTracker.Services
                 .AnyAsync(c => c.HabitId == habitId &&
                               c.CompletedDate.Date == DateTime.UtcNow.Date);
         }
+
+        public async Task<DailyHabit?> GetHabitWithCompletionsAsync(Guid habitId, Guid userId)
+        {
+            return await _context.Habits
+                .Include(h => h.Completions)
+                .FirstOrDefaultAsync(h => h.HabitId == habitId && h.UserId == userId);
+        }
     }
 }

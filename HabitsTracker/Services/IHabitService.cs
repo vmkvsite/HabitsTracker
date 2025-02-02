@@ -9,5 +9,7 @@ namespace HabitsTracker.Services
         Task DeleteHabitAsync(Guid habitId, Guid userId);
         Task ToggleHabitCompletionAsync(Guid habitId, Guid userId);
         Task<bool> IsHabitCompletedTodayAsync(Guid habitId);
+
+        Task<DailyHabit?> GetHabitWithCompletionsAsync(Guid habitId, Guid userId);
     }
 }
