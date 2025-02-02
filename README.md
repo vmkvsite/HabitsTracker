@@ -54,9 +54,7 @@ Alternatively, you can simply download and run the `.exe` version for an easier 
 
 ### Frontend:
 - **HTML/CSS**
-- **Tailwind CSS**
 - **Razor Views**
-- **Bootstrap**
 
 ---
 
