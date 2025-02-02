@@ -48,28 +48,45 @@ namespace HabitsTracker.Services
 
         public async Task ToggleHabitCompletionAsync(Guid habitId, Guid userId)
         {
-            var habit = await _context.Habits
-                .Include(h => h.Completions)
-                .FirstOrDefaultAsync(h => h.HabitId == habitId && h.UserId == userId);
-
-            if (habit == null) return;
-
-            var todayCompletion = habit.Completions
-                .FirstOrDefault(c => c.CompletedDate.Date == DateTime.UtcNow.Date);
-
-            if (todayCompletion != null)
+            // Start a transaction to ensure consistency
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                _context.Remove(todayCompletion);
-            }
-            else
-            {
-                habit.Completions.Add(new HabitCompletion
+                // First, verify the habit exists and belongs to the user
+                var habit = await _context.Habits
+                    .FirstOrDefaultAsync(h => h.HabitId == habitId && h.UserId == userId);
+
+                if (habit == null) return;
+
+                // Check for today's completion separately
+                var todayCompletion = await _context.HabitCompletions
+                    .FirstOrDefaultAsync(c => c.HabitId == habitId &&
+                                            c.CompletedDate.Date == DateTime.UtcNow.Date);
+
+                if (todayCompletion != null)
                 {
-                    CompletedDate = DateTime.UtcNow
-                });
-            }
+                    // If completion exists, remove it
+                    _context.HabitCompletions.Remove(todayCompletion);
+                }
+                else
+                {
+                    // If no completion exists, add new one
+                    var completion = new HabitCompletion
+                    {
+                        HabitId = habitId,
+                        CompletedDate = DateTime.UtcNow
+                    };
+                    _context.HabitCompletions.Add(completion);
+                }
 
-            await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task<bool> IsHabitCompletedTodayAsync(Guid habitId)

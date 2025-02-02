@@ -1,155 +1,69 @@
 ﻿@model HabitsTracker.ViewModels.DashboardViewModel
 
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
 <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold">My Habits</h1>
+        <h1 class="text-3xl font-bold text-white">My Habits</h1>
         <form asp-controller="Auth" asp-action="LogOut" method="post">
+            @Html.AntiForgeryToken()
             <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
                 Sign Out
             </button>
         </form>
     </div>
 
-    <div class="bg-white rounded-lg shadow-md p-6">
+    <div class="bg-[#404040] rounded-lg shadow-md p-6">
         <div class="mb-6">
-            <div class="flex gap-4">
-                <input type="text" id="newHabitInput" placeholder="Enter new habit"
-                       class="flex-grow shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
-                <button onclick="createHabit()"
+            <form method="post" action="@Url.Action("CreateHabit", "HabitTracker")" class="flex gap-4">
+                @Html.AntiForgeryToken()
+                <input type="text" name="Title" placeholder="Enter new habit"
+                       class="flex-grow shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-[#505050]" required />
+                <button type="submit"
                         class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
                     Add Habit
                 </button>
-            </div>
+            </form>
         </div>
 
         <div id="habitsList" class="space-y-4">
             @foreach (var habit in Model.Habits)
             {
-                <div class="habit-item flex items-center justify-between p-4 bg-gray-50 rounded-lg" data-id="@habit.Id">
+                <div class="habit-item flex items-center justify-between p-4 bg-[#353535] rounded-lg">
                     <div class="flex items-center gap-4">
-                        <button onclick="toggleHabit('@habit.Id')"
-                                class="habit-check w-6 h-6 rounded-full border-2 border-blue-500 flex items-center justify-center @(habit.IsCompletedToday ? "bg-blue-500" : "")">
-                            @if (habit.IsCompletedToday)
-                            {
-                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                            }
-                        </button>
-                        <span class="habit-text text-lg @(habit.IsCompletedToday ? "line-through text-gray-500" : "")">
-                            @habit.Title
-                        </span>
+                        <!-- Habit Completion Toggle -->
+                        <form method="post" action="@Url.Action("ToggleCompletion", "HabitTracker")" class="flex items-center">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="habitId" value="@habit.Id" />
+                            <button type="submit"
+                                    class="habit-check w-6 h-6 rounded-full border-2 border-blue-500 flex items-center justify-center @(habit.IsCompletedToday ? "bg-blue-500" : "")">
+                                @if (habit.IsCompletedToday)
+                                {
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                }
+                            </button>
+                            <span class="ml-4 text-lg text-white @(habit.IsCompletedToday ? "line-through opacity-50" : "")">
+                                @habit.Title
+                            </span>
+                        </form>
                     </div>
-                    <button onclick="deleteHabit('@habit.Id')"
-                            class="text-red-500 hover:text-red-700">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                    </button>
+
+                    <!-- Delete Habit -->
+                    <form method="post" action="@Url.Action("DeleteHabit", "HabitTracker")">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="habitId" value="@habit.Id" />
+                        <button type="submit" class="text-red-500 hover:text-red-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </form>
                 </div>
             }
         </div>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        async function createHabit() {
-            const input = document.getElementById('newHabitInput');
-            const title = input.value.trim();
-            if (!title) return;
-
-            try {
-                const response = await fetch('/HabitTracker/CreateHabit', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ title })
-                });
-
-                if (response.ok) {
-                    const habit = await response.json();
-                    addHabitToList(habit);
-                    input.value = '';
-                }
-            } catch (error) {
-                console.error('Error creating habit:', error);
-            }
-        }
-
-        async function toggleHabit(habitId) {
-            try {
-                const response = await fetch(`/HabitTracker/ToggleCompletion?habitId=${habitId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    const habitElement = document.querySelector(`[data-id="${habitId}"]`);
-                    const textSpan = habitElement.querySelector('.habit-text');
-                    const checkButton = habitElement.querySelector('.habit-check');
-
-                    if (result.isCompleted) {
-                        textSpan.classList.add('line-through', 'text-gray-500');
-                        checkButton.classList.add('bg-blue-500');
-                        checkButton.innerHTML = `
-                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                    </svg>`;
-                    } else {
-                        textSpan.classList.remove('line-through', 'text-gray-500');
-                        checkButton.classList.remove('bg-blue-500');
-                        checkButton.innerHTML = '';
-                    }
-                }
-            } catch (error) {
-                console.error('Error toggling habit:', error);
-            }
-        }
-
-        async function deleteHabit(habitId) {
-            if (!confirm('Are you sure you want to delete this habit?')) return;
-
-            try {
-                const response = await fetch(`/HabitTracker/DeleteHabit?habitId=${habitId}`, {
-                    method: 'POST'
-                });
-
-                if (response.ok) {
-                    const habitElement = document.querySelector(`[data-id="${habitId}"]`);
-                    habitElement?.remove();
-                }
-            } catch (error) {
-                console.error('Error deleting habit:', error);
-            }
-        }
-
-        function addHabitToList(habit) {
-            const habitsList = document.getElementById('habitsList');
-            const habitElement = document.createElement('div');
-            habitElement.className = 'habit-item flex items-center justify-between p-4 bg-gray-50 rounded-lg';
-            habitElement.setAttribute('data-id', habit.id);
-
-            habitElement.innerHTML = `
-                        <div class="flex items-center gap-4">
-                            <button onclick="toggleHabit('${habit.id}')"
-                                    class="habit-check w-6 h-6 rounded-full border-2 border-blue-500 flex items-center justify-center">
-                            </button>
-                            <span class="habit-text text-lg">${habit.title}</span>
-                        </div>
-                        <button onclick="deleteHabit('${habit.id}')"
-                                class="text-red-500 hover:text-red-700">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                        </button>
-                    `;
-
-            habitsList.appendChild(habitElement);
-        }
-    </script>
-}

@@ -16,12 +16,56 @@
             }
         }
     </script>
+    <style>
+        body {
+            background-color: #303030;
+        }
+
+        /* Update text colors */
+        body, h1, h2, h3, h4, h5, h6, p, span:not(.habit-check *) {
+            color: white;
+        }
+
+        /* Keep form inputs and their text black */
+        input[type="text"],
+        input[type="password"] {
+            color: black !important;
+            background-color: white !important;
+        }
+
+        /* Keep links blue */
+        a:not(.nav-brand) {
+            color: #3B82F6;
+        }
+
+        a:hover:not(.nav-brand) {
+            color: #2563EB;
+        }
+
+        /* Update container backgrounds */
+        .bg-white, .bg-gray-50, .bg-gray-100 {
+            background-color: #404040;
+        }
+
+        /* Keep habit completion checkbox styles */
+        .habit-check svg {
+            color: white;
+        }
+
+        .habit-text {
+            color: white !important;
+        }
+
+        /* Override any Tailwind background classes */
+        .bg-gray-50 {
+            background-color: #303030 !important;
+        }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="min-h-screen">
     <main>
         @RenderBody()
     </main>
-
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.12/dist/jquery.validate.unobtrusive.min.js"></script>

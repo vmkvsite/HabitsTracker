@@ -41,53 +41,51 @@ namespace HabitsTracker.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateHabit([FromBody] CreateHabitViewModel model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateHabit(string Title)
         {
             var userIdString = HttpContext.Session.GetString("CurrentUser");
             if (string.IsNullOrEmpty(userIdString))
             {
-                return Unauthorized();
+                return RedirectToAction("SignIn", "Auth");
             }
 
             var userId = Guid.Parse(userIdString);
-            var habit = await _habitService.CreateHabitAsync(model.Title, userId);
+            await _habitService.CreateHabitAsync(Title, userId);
 
-            return Json(new
-            {
-                id = habit.HabitId,
-                title = habit.Title,
-                isCompletedToday = false
-            });
+            return RedirectToAction("Dashboard");
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteHabit(Guid habitId)
         {
             var userIdString = HttpContext.Session.GetString("CurrentUser");
             if (string.IsNullOrEmpty(userIdString))
             {
-                return Unauthorized();
+                return RedirectToAction("SignIn", "Auth");
             }
 
             var userId = Guid.Parse(userIdString);
             await _habitService.DeleteHabitAsync(habitId, userId);
-            return Ok();
+
+            return RedirectToAction("Dashboard");
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleCompletion(Guid habitId)
         {
             var userIdString = HttpContext.Session.GetString("CurrentUser");
             if (string.IsNullOrEmpty(userIdString))
             {
-                return Unauthorized();
+                return RedirectToAction("SignIn", "Auth");
             }
 
             var userId = Guid.Parse(userIdString);
             await _habitService.ToggleHabitCompletionAsync(habitId, userId);
 
-            var isCompleted = await _habitService.IsHabitCompletedTodayAsync(habitId);
-            return Json(new { isCompleted });
+            return RedirectToAction("Dashboard");
         }
     }
 }
