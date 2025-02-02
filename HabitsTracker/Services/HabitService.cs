@@ -18,15 +18,19 @@ namespace HabitsTracker.Services
             return await _context.Habits
                 .Include(h => h.Completions)
                 .Where(h => h.UserId == userId)
+                .OrderBy(h => h.TargetTime == null) // Habits with time come first
+                .ThenBy(h => h.TargetTime)          // Then sort by time
+                .ThenBy(h => h.Title)               // Then by title
                 .ToListAsync();
         }
 
-        public async Task<DailyHabit> CreateHabitAsync(string title, Guid userId)
+        public async Task<DailyHabit> CreateHabitAsync(string title, Guid userId, TimeSpan? targetTime = null)
         {
             var habit = new DailyHabit
             {
                 Title = title,
-                UserId = userId
+                UserId = userId,
+                TargetTime = targetTime
             };
 
             _context.Habits.Add(habit);

@@ -17,8 +17,22 @@
         }
     </script>
     <style>
+        @@font-face {
+            font-family: 'Accid';
+            src: url('../Fonts/accid.ttf') format('truetype');
+        }
+
         body {
             background-color: #303030;
+        }
+
+        .nav-brand {
+            font-family: 'Accid', sans-serif;
+        }
+
+        .nav-texture {
+            background-color: #252525;
+            background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23353535' fill-opacity='0.4' fill-rule='evenodd'%3E%3Cpath d='M5 0h1L0 6V5zM6 5v1H5z'/%3E%3C/g%3E%3C/svg%3E");
         }
 
         /* Update text colors */
@@ -26,12 +40,21 @@
             color: white;
         }
 
-        /* Keep form inputs and their text black */
+        /* Input styling */
         input[type="text"],
         input[type="password"] {
             color: black !important;
             background-color: white !important;
         }
+
+        input[type="time"] {
+            color: white !important;
+            background-color: #505050 !important;
+        }
+
+            input[type="time"]::-webkit-calendar-picker-indicator {
+                filter: invert(1);
+            }
 
         /* Keep links blue */
         a:not(.nav-brand) {
@@ -63,6 +86,40 @@
     </style>
 </head>
 <body class="min-h-screen">
+    <nav class="nav-texture shadow-md">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-1"></div>
+                <div class="flex-1 text-center">
+                    <span class="text-white text-2xl font-bold nav-brand">Habit Tracker</span>
+                </div>
+                <div class="flex-1 flex justify-end">
+                    @if (Context.Session.GetString("CurrentUser") != null)
+                    {
+                        <form asp-controller="Auth" asp-action="LogOut" method="post" class="inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                                Log Out
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("SignIn", "Auth")"
+                           style="color: black !important;"
+                           class="bg-blue-500 hover:bg-blue-600 font-bold py-2 px-4 rounded mr-2 inline-block">
+                            Login
+                        </a>
+                        <a href="@Url.Action("Register", "Auth")"
+                           style="color: black !important;"
+                           class="bg-green-500 hover:bg-green-600 font-bold py-2 px-4 rounded inline-block">
+                            Register
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </nav>
     <main>
         @RenderBody()
     </main>

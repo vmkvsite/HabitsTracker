@@ -1,18 +1,15 @@
-using Microsoft.EntityFrameworkCore;
 using HabitsTracker.Data;
 using HabitsTracker.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
+// Add services to the container.
+builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<HabitsDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Register services
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IHabitService, HabitService>();
-
-// Add session support
+// Add Session services
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -21,33 +18,31 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// Add MVC with views
-var mvcBuilder = builder.Services.AddControllersWithViews();
-#if DEBUG
-mvcBuilder.AddRazorRuntimeCompilation();
-#endif
+// Add your custom services
+builder.Services.AddScoped<IHabitService, HabitService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
-}
-else
-{
-    app.UseExceptionHandler("/Error");
+    app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
 app.UseRouting();
+
+// Add Session middleware
 app.UseSession();
+
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Auth}/{action=SignIn}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

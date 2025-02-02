@@ -33,7 +33,10 @@ namespace HabitsTracker.Controllers
                 {
                     Id = h.HabitId,
                     Title = h.Title,
-                    IsCompletedToday = h.Completions.Any(c => c.CompletedDate.Date == DateTime.UtcNow.Date)
+                    IsCompletedToday = h.Completions.Any(c => c.CompletedDate.Date == DateTime.UtcNow.Date),
+                    TargetTimeDisplay = h.TargetTime.HasValue ?
+                        DateTime.Today.Add(h.TargetTime.Value).ToString("hh:mm tt", System.Globalization.CultureInfo.InvariantCulture) :
+                        null
                 }).ToList()
             };
 
@@ -42,7 +45,7 @@ namespace HabitsTracker.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateHabit(string Title)
+        public async Task<IActionResult> CreateHabit(string Title, string? Time)
         {
             var userIdString = HttpContext.Session.GetString("CurrentUser");
             if (string.IsNullOrEmpty(userIdString))
@@ -51,7 +54,18 @@ namespace HabitsTracker.Controllers
             }
 
             var userId = Guid.Parse(userIdString);
-            await _habitService.CreateHabitAsync(Title, userId);
+            TimeSpan? targetTime = null;
+
+            if (!string.IsNullOrEmpty(Time))
+            {
+                // Handle HTML time input format (HH:mm)
+                if (DateTime.TryParse($"2000-01-01 {Time}", out var dateTime))
+                {
+                    targetTime = dateTime.TimeOfDay;
+                }
+            }
+
+            await _habitService.CreateHabitAsync(Title, userId, targetTime);
 
             return RedirectToAction("Dashboard");
         }

@@ -5,22 +5,18 @@
 }
 
 <div class="container mx-auto px-4 py-8">
-    <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-white">My Habits</h1>
-        <form asp-controller="Auth" asp-action="LogOut" method="post">
-            @Html.AntiForgeryToken()
-            <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                Sign Out
-            </button>
-        </form>
-    </div>
-
     <div class="bg-[#404040] rounded-lg shadow-md p-6">
         <div class="mb-6">
             <form method="post" action="@Url.Action("CreateHabit", "HabitTracker")" class="flex gap-4">
                 @Html.AntiForgeryToken()
-                <input type="text" name="Title" placeholder="Enter new habit"
-                       class="flex-grow shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-[#505050]" required />
+                <input type="text"
+                       name="Title"
+                       placeholder="Enter new habit"
+                       class="flex-grow shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-[#505050]"
+                       required />
+                <input type="time"
+                       name="Time"
+                       class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-[#505050]" />
                 <button type="submit"
                         class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
                     Add Habit
@@ -33,7 +29,6 @@
             {
                 <div class="habit-item flex items-center justify-between p-4 bg-[#353535] rounded-lg">
                     <div class="flex items-center gap-4">
-                        <!-- Habit Completion Toggle -->
                         <form method="post" action="@Url.Action("ToggleCompletion", "HabitTracker")" class="flex items-center">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="habitId" value="@habit.Id" />
@@ -49,10 +44,15 @@
                             <span class="ml-4 text-lg text-white @(habit.IsCompletedToday ? "line-through opacity-50" : "")">
                                 @habit.Title
                             </span>
+                            @if (!string.IsNullOrEmpty(habit.TargetTimeDisplay))
+                            {
+                                <span class="ml-2 text-sm text-gray-400">
+                                    @habit.TargetTimeDisplay
+                                </span>
+                            }
                         </form>
                     </div>
 
-                    <!-- Delete Habit -->
                     <form method="post" action="@Url.Action("DeleteHabit", "HabitTracker")">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="habitId" value="@habit.Id" />
