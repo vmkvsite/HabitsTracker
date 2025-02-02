@@ -3,7 +3,7 @@
 <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-8">
         <h1 class="text-3xl font-bold">My Habits</h1>
-        <form asp-controller="Auth" asp-action="SignOut" method="post">
+        <form asp-controller="Auth" asp-action="LogOut" method="post">
             <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
                 Sign Out
             </button>
@@ -28,7 +28,7 @@
                 <div class="habit-item flex items-center justify-between p-4 bg-gray-50 rounded-lg" data-id="@habit.Id">
                     <div class="flex items-center gap-4">
                         <button onclick="toggleHabit('@habit.Id')"
-                                class="w-6 h-6 rounded-full border-2 border-blue-500 flex items-center justify-center @(habit.IsCompletedToday ? "bg-blue-500" : "")">
+                                class="habit-check w-6 h-6 rounded-full border-2 border-blue-500 flex items-center justify-center @(habit.IsCompletedToday ? "bg-blue-500" : "")">
                             @if (habit.IsCompletedToday)
                             {
                                 <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -36,7 +36,7 @@
                                 </svg>
                             }
                         </button>
-                        <span class="text-lg @(habit.IsCompletedToday ? "line-through text-gray-500" : "")">
+                        <span class="habit-text text-lg @(habit.IsCompletedToday ? "line-through text-gray-500" : "")">
                             @habit.Title
                         </span>
                     </div>
@@ -81,12 +81,30 @@
         async function toggleHabit(habitId) {
             try {
                 const response = await fetch(`/HabitTracker/ToggleCompletion?habitId=${habitId}`, {
-                    method: 'POST'
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
                 });
 
                 if (response.ok) {
-                    const { isCompleted } = await response.json();
-                    updateHabitDisplay(habitId, isCompleted);
+                    const result = await response.json();
+                    const habitElement = document.querySelector(`[data-id="${habitId}"]`);
+                    const textSpan = habitElement.querySelector('.habit-text');
+                    const checkButton = habitElement.querySelector('.habit-check');
+
+                    if (result.isCompleted) {
+                        textSpan.classList.add('line-through', 'text-gray-500');
+                        checkButton.classList.add('bg-blue-500');
+                        checkButton.innerHTML = `
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>`;
+                    } else {
+                        textSpan.classList.remove('line-through', 'text-gray-500');
+                        checkButton.classList.remove('bg-blue-500');
+                        checkButton.innerHTML = '';
+                    }
                 }
             } catch (error) {
                 console.error('Error toggling habit:', error);
@@ -117,43 +135,21 @@
             habitElement.setAttribute('data-id', habit.id);
 
             habitElement.innerHTML = `
-                <div class="flex items-center gap-4">
-                    <button onclick="toggleHabit('${habit.id}')"
-                            class="w-6 h-6 rounded-full border-2 border-blue-500 flex items-center justify-center">
-                    </button>
-                    <span class="text-lg">${habit.title}</span>
-                </div>
-                <button onclick="deleteHabit('${habit.id}')"
-                        class="text-red-500 hover:text-red-700">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                </button>
-            `;
+                        <div class="flex items-center gap-4">
+                            <button onclick="toggleHabit('${habit.id}')"
+                                    class="habit-check w-6 h-6 rounded-full border-2 border-blue-500 flex items-center justify-center">
+                            </button>
+                            <span class="habit-text text-lg">${habit.title}</span>
+                        </div>
+                        <button onclick="deleteHabit('${habit.id}')"
+                                class="text-red-500 hover:text-red-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    `;
 
             habitsList.appendChild(habitElement);
-        }
-
-        function updateHabitDisplay(habitId, isCompleted) {
-            const habitElement = document.querySelector(`[data-id="${habitId}"]`);
-            if (!habitElement) return;
-
-            const checkButton = habitElement.querySelector('button');
-            const textSpan = habitElement.querySelector('span');
-
-            if (isCompleted) {
-                checkButton.classList.add('bg-blue-500');
-                checkButton.innerHTML = `
-                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                `;
-                textSpan.classList.add('line-through', 'text-gray-500');
-            } else {
-                checkButton.classList.remove('bg-blue-500');
-                checkButton.innerHTML = '';
-                textSpan.classList.remove('line-through', 'text-gray-500');
-            }
         }
     </script>
 }
